@@ -1,46 +1,56 @@
-import {tokenizer} from "../src/reader";
+import {tokenizer,readAtom,Reader} from "../src/reader";
+import {Node} from "../src/types";
 
 //Tokenizer tests
 
 test('Test string tokenizer for valid lisp', () => {
-    let tokens:string[] = tokenizer("(+ 2 (* 3 4))")
+    let tokens:string[] = tokenizer("(+ 2 (* 3 4))");
     expect(tokens.length).toBe(9);
 });
 
 //tokenize special characters like ~@
 test('Test string tokenizer for first alternation', () => {
-    let tokens:string[] = tokenizer("  ~@")
+    let tokens:string[] = tokenizer("  ~@");
     expect(tokens.length).toBe(1);
 });
 //Tokenize brackets
 test('Test string tokenizer for second alternation', () => {
-    let tokens:string[] = tokenizer("  ((")
+    let tokens:string[] = tokenizer("  ((");
     expect(tokens.length).toBe(2);
 });
 
 //"(?:\\.|[^\\"])*"?
 //Tokenize strings
 test('Test string tokenizer for third alternation', () => {
-    let tokens:string[] = tokenizer("\"\b\b\"")
+    let tokens:string[] = tokenizer("\"\b\b\"");
     expect(tokens.length).toBe(1);
-    tokens = tokenizer("\"\b\c\b\"")
+    tokens = tokenizer("\"\b\c\b\"");
     console.log(tokens);
     expect(tokens.length).toBe(1);
-    tokens = tokenizer("\"abc")
+    tokens = tokenizer("\"abc");
     expect(tokens.length).toBe(1);
-    tokens = tokenizer("\"abc\"")
+    tokens = tokenizer("\"abc\"");
     expect(tokens.length).toBe(1);
 });
 
 
 //tokenize comments to ignore
 test('Test string tokenizer for fourth alternation', () => {
-    let tokens:string[] = tokenizer(";djkjgjkd")
+    let tokens:string[] = tokenizer(";djkjgjkd");
     expect(tokens.length).toBe(0);
 });
 
 //tokenize symbols
 test('Test string tokenizer for fifth alternation', () => {
-    let tokens:string[] = tokenizer("symbol function")
+    let tokens:string[] = tokenizer("symbol function");
     expect(tokens.length).toBe(2);
 });
+
+
+//Read atom tests
+test("Read number using read atom", () => {
+    expect(readAtom(new Reader(tokenizer("25"))).type).toBe(Node.Number);
+    expect(readAtom(new Reader(tokenizer("25ab"))).type).toBe(Node.Symbol)
+    expect(readAtom(new Reader(tokenizer("-0.5"))).type).toBe(Node.Number);
+    expect(readAtom(new Reader(tokenizer("-0.5ab"))).type).toBe(Node.Symbol);
+})

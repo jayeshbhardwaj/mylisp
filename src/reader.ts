@@ -1,6 +1,6 @@
 import { MalType, MalList, MalString, MalNumber, MalBoolean, MalNil, MalKeyword, MalSymbol, MalVector, MalHashMap } from "./types";
 
-class Reader {
+export class Reader {
     position = 0;
 
     constructor(private tokens: string[]) { }
@@ -119,13 +119,13 @@ function readParen(reader: Reader, ctor: { new (list: MalType[]): MalType; }, op
     return new ctor(list);
 }
 
-function readAtom(reader: Reader): MalType {
+export function readAtom(reader: Reader): MalType {
     const token = reader.next();
     if (token.match(/^-?[0-9]+$/)) {
         const v = parseInt(token, 10);
         return new MalNumber(v);
     }
-    if (token.match(/^-?[0-9]\.[0-9]+$/)) {
+    if (token.match(/^-?[0-9]+\.[0-9]+$/)) {
         const v = parseFloat(token);
         return new MalNumber(v);
     }
