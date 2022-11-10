@@ -22,8 +22,14 @@ export function readStr(input: string): MalType {
     return readForm(reader);
 }
 
-function tokenizer(input: string): string[] {
+export function tokenizer(input: string): string[] {
     const regexp = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)/g;
+    //              1.ignore space and comma 2. create capture group with 5 alternations
+    //              3. First alternation: ~@
+    //              4. Second alternation: any of all brackets and some symbols [\[\]{}()'`~^@]
+    //              5. Third alternation: match any string, non capture group with alternation of either 1 escaped char or negated set of quotes
+    //              6. Fourth alternation: semicolon followed by any number of chars
+    //              7. Fifth alternation: capture symbol , no brackers of commas,tilde,semicolon
     const tokens: string[] = [];
     while (true) {
         const matches = regexp.exec(input);
@@ -34,6 +40,7 @@ function tokenizer(input: string): string[] {
         if (match === "") {
             break;
         }
+        //ignore comments
         if (match[0] !== ";") {
             tokens.push(match);
         }
