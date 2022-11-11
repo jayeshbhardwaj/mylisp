@@ -49,7 +49,7 @@ export function tokenizer(input: string): string[] {
     return tokens;
 }
 
-function readForm(reader: Reader): TLType {
+export function readForm(reader: Reader): TLType {
     const token = reader.peek();
     switch (token) {
         case "(":
@@ -58,6 +58,7 @@ function readForm(reader: Reader): TLType {
             return readVector(reader);
         case "{":
             return readHashMap(reader);
+        /*
         case "'":
             return readSymbol("quote");
         case "`":
@@ -74,7 +75,7 @@ function readForm(reader: Reader): TLType {
             const sym = TLSymbol.get("with-meta");
             const target = readForm(reader);
             return new TLList([sym, readForm(reader), target]);
-        }
+        }*/
         default:
             return readAtom(reader);
     }

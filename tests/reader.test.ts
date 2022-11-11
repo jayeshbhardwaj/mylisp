@@ -1,5 +1,5 @@
-import {tokenizer,readAtom,Reader} from "../src/reader";
-import {TLString, Node} from "../src/types";
+import {tokenizer,readAtom,Reader,readForm} from "../src/reader";
+import {TLString, Node, TLType, TLList, TLSymbol} from "../src/types";
 
 //Tokenizer tests
 
@@ -70,4 +70,17 @@ test("Read keywords/boolean and nil using read atom", () => {
     expect(readAtom(new Reader(tokenizer("true"))).type).toBe(Node.Boolean)
     expect(readAtom(new Reader(tokenizer("false"))).type).toBe(Node.Boolean)
     expect(readAtom(new Reader(tokenizer("nil"))).type).toBe(Node.Nil)
+})
+
+//Lisp parser tests - readForm()
+
+test("Basic lisp expression test", () => {
+    let expr:TLType = readForm(new Reader(tokenizer("(+ 2 (* 3 4))")))
+    console.log(expr)
+    expect(expr.type).toBe(Node.List)
+    let tlist = (expr as TLList).list
+    expect(tlist[0]).toBe(TLSymbol.get("+"))
+    //nested
+    expect(tlist[2].type).toBe(Node.List)
+    expect((tlist[2] as TLList).list[0]).toBe(TLSymbol.get("*"))
 })
