@@ -1,4 +1,4 @@
-import { MalType, MalList, MalString, MalNumber, MalBoolean, MalNil, MalKeyword, MalSymbol, MalVector, MalHashMap } from "./types";
+import { TLType, TLList, TLString, TLNumber, TLBoolean, TLNil, TLKeyword, TLSymbol, TLVector, TLHashMap } from "./types";
 
 export class Reader {
     position = 0;
@@ -16,7 +16,7 @@ export class Reader {
     }
 }
 
-export function readStr(input: string): MalType {
+export function readStr(input: string): TLType {
     const tokens = tokenizer(input);
     const reader = new Reader(tokens);
     return readForm(reader);
@@ -49,7 +49,7 @@ export function tokenizer(input: string): string[] {
     return tokens;
 }
 
-function readForm(reader: Reader): MalType {
+function readForm(reader: Reader): TLType {
     const token = reader.peek();
     switch (token) {
         case "(":
@@ -71,9 +71,9 @@ function readForm(reader: Reader): MalType {
         case "^":
         {
             reader.next();
-            const sym = MalSymbol.get("with-meta");
+            const sym = TLSymbol.get("with-meta");
             const target = readForm(reader);
-            return new MalList([sym, readForm(reader), target]);
+            return new TLList([sym, readForm(reader), target]);
         }
         default:
             return readAtom(reader);
@@ -81,30 +81,30 @@ function readForm(reader: Reader): MalType {
 
     function readSymbol(name: string) {
         reader.next();
-        const sym = MalSymbol.get(name);
+        const sym = TLSymbol.get(name);
         const target = readForm(reader);
-        return new MalList([sym, target]);
+        return new TLList([sym, target]);
     }
 }
 
-function readList(reader: Reader): MalType {
-    return readParen(reader, MalList, "(", ")");
+function readList(reader: Reader): TLType {
+    return readParen(reader, TLList, "(", ")");
 }
 
-function readVector(reader: Reader): MalType {
-    return readParen(reader, MalVector, "[", "]");
+function readVector(reader: Reader): TLType {
+    return readParen(reader, TLVector, "[", "]");
 }
 
-function readHashMap(reader: Reader): MalType {
-    return readParen(reader, MalHashMap, "{", "}");
+function readHashMap(reader: Reader): TLType {
+    return readParen(reader, TLHashMap, "{", "}");
 }
-
-function readParen(reader: Reader, ctor: { new (list: MalType[]): MalType; }, open: string, close: string): MalType {
+type Constructor<T> = new (list: T[]) => T;
+function readParen(reader: Reader, ctor: Constructor<TLType>, open: string, close: string): TLType {
     const token = reader.next(); // drop open paren
     if (token !== open) {
         throw new Error(`unexpected token ${token}, expected ${open}`);
     }
-    const list: MalType[] = [];
+    const list: TLType[] = [];
     while (true) {
         const next = reader.peek();
         if (next === close) {
@@ -115,39 +115,38 @@ function readParen(reader: Reader, ctor: { new (list: MalType[]): MalType; }, op
         list.push(readForm(reader));
     }
     reader.next(); // drop close paren
-
     return new ctor(list);
 }
 
-export function readAtom(reader: Reader): MalType {
+export function readAtom(reader: Reader): TLType {
     const token = reader.next();
     if (token.match(/^-?[0-9]+$/)) {
         const v = parseInt(token, 10);
-        return new MalNumber(v);
+        return new TLNumber(v);
     }
     if (token.match(/^-?[0-9]+\.[0-9]+$/)) {
         const v = parseFloat(token);
-        return new MalNumber(v);
+        return new TLNumber(v);
     }
     if (token.match(/^"(?:\\.|[^\\"])*"$/)) {
         const v = token.slice(1, token.length - 1)
             .replace(/\\(.)/g, (_, c: string) => c == 'n' ? '\n' : c)
-        return new MalString(v);
+        return new TLString(v);
     }
     if (token[0] === '"') {
         throw new Error("expected '\"', got EOF");
     }
     if (token[0] === ":") {
-        return MalKeyword.get(token.substr(1));
+        return TLKeyword.get(token.substr(1));
     }
     switch (token) {
         case "nil":
-            return MalNil.instance;
+            return TLNil.instance;
         case "true":
-            return new MalBoolean(true);
+            return new TLBoolean(true);
         case "false":
-            return new MalBoolean(false);
+            return new TLBoolean(false);
     }
 
-    return MalSymbol.get(token);
+    return TLSymbol.get(token);
 }

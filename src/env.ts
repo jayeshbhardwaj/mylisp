@@ -1,27 +1,27 @@
-import { MalType, MalSymbol, MalList } from "./types";
+import { TLType, TLSymbol, TLList } from "./types";
 
 export class Env {
-    data: Map<MalSymbol, MalType>;
+    data: Map<TLSymbol, TLType>;
 
-    constructor(public outer?: Env, binds: MalSymbol[] = [], exprts: MalType[] = []) {
+    constructor(public outer?: Env, binds: TLSymbol[] = [], exprts: TLType[] = []) {
         this.data = new Map();
 
         for (let i = 0; i < binds.length; i++) {
             const bind = binds[i];
             if (bind.v === "&") {
-                this.set(binds[i + 1], new MalList(exprts.slice(i)));
+                this.set(binds[i + 1], new TLList(exprts.slice(i)));
                 break;
             }
             this.set(bind, exprts[i]);
         }
     }
 
-    set(key: MalSymbol, value: MalType): MalType {
+    set(key: TLSymbol, value: TLType): TLType {
         this.data.set(key, value);
         return value;
     }
 
-    find(key: MalSymbol): Env | undefined {
+    find(key: TLSymbol): Env | undefined {
         if (this.data.has(key)) {
             return this;
         }
@@ -32,7 +32,7 @@ export class Env {
         return void 0;
     }
 
-    get(key: MalSymbol): MalType {
+    get(key: TLSymbol): TLType {
         const env = this.find(key);
         if (!env) {
             throw new Error(`'${key.v}' not found`);

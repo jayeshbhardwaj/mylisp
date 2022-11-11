@@ -1,6 +1,6 @@
 import { Env } from "./env";
 
-export type MalType = MalList | MalNumber | MalString | MalNil | MalBoolean | MalSymbol | MalKeyword | MalVector | MalHashMap | MalFunction | MalAtom;
+export type TLType = TLList | TLNumber | TLString | TLNil | TLBoolean | TLSymbol | TLKeyword | TLVector | TLHashMap | TLFunction | TLAtom;
 
 export const enum Node {
     List = 1,
@@ -16,7 +16,7 @@ export const enum Node {
     Atom,
 }
 
-export function equals(a: MalType, b: MalType, strict?: boolean): boolean {
+export function equals(a: TLType, b: TLType, strict?: boolean): boolean {
     if (strict && a.type !== b.type) {
         return false;
     }
@@ -61,7 +61,7 @@ export function equals(a: MalType, b: MalType, strict?: boolean): boolean {
 
     return false;
 
-    function listEquals(a: MalType[], b: MalType[]): boolean {
+    function listEquals(a: TLType[], b: TLType[]): boolean {
         if (a.length !== b.length) {
             return false;
         }
@@ -74,163 +74,169 @@ export function equals(a: MalType, b: MalType, strict?: boolean): boolean {
     }
 }
 
-export function isSeq(ast: MalType): ast is MalList | MalVector {
+export function isSeq(ast: TLType): ast is TLList | TLVector {
     return ast.type === Node.List || ast.type === Node.Vector;
 }
 
-export function isAST(v: MalType): v is MalType {
+export function isAST(v: TLType): v is TLType {
     return !!v.type;
 }
 
-export class MalList {
-    type: Node.List = Node.List;
-    meta?: MalType;
+export class Seq {
+    type?: Node.List = Node.List;
+    meta?: TLType;
+    constructor(public list: TLType[]){}
 
-    constructor(public list: MalType[]) {
+}
+export class TLList{
+    type: Node.List = Node.List;
+    meta?: TLType;
+
+    constructor(public list: TLType[]) {
     }
 
-    withMeta(meta: MalType) {
-        const v = new MalList(this.list);
+    withMeta(meta: TLType) {
+        const v = new TLList(this.list);
         v.meta = meta;
         return v;
     }
 }
 
-export class MalNumber {
+export class TLNumber {
     type: Node.Number = Node.Number;
-    meta?: MalType;
+    meta?: TLType;
 
     constructor(public v: number) {
     }
 
-    withMeta(meta: MalType) {
-        const v = new MalNumber(this.v);
+    withMeta(meta: TLType) {
+        const v = new TLNumber(this.v);
         v.meta = meta;
         return v;
     }
 }
 
-export class MalString {
+export class TLString {
     type: Node.String = Node.String;
-    meta?: MalType;
+    meta?: TLType;
 
     constructor(public v: string) {
     }
 
-    withMeta(meta: MalType) {
-        const v = new MalString(this.v);
+    withMeta(meta: TLType) {
+        const v = new TLString(this.v);
         v.meta = meta;
         return v;
     }
 }
 
-export class MalNil {
+export class TLNil {
 
-    private static _instance?: MalNil;
+    private static _instance?: TLNil;
 
-    static get instance(): MalNil {
+    static get instance(): TLNil {
         if (this._instance) {
             return this._instance;
         }
-        this._instance = new MalNil();
+        this._instance = new TLNil();
         return this._instance;
     }
 
     type: Node.Nil = Node.Nil;
-    meta?: MalType;
+    meta?: TLType;
 
     private constructor() { }
 
-    withMeta(_meta: MalType): MalNil {
+    withMeta(_meta: TLType): TLNil {
         throw new Error(`not supported`);
     }
 }
 
-export class MalBoolean {
+export class TLBoolean {
     type: Node.Boolean = Node.Boolean;
-    meta?: MalType;
+    meta?: TLType;
 
     constructor(public v: boolean) {
     }
 
-    withMeta(meta: MalType) {
-        const v = new MalBoolean(this.v);
+    withMeta(meta: TLType) {
+        const v = new TLBoolean(this.v);
         v.meta = meta;
         return v;
     }
 }
 
-export class MalSymbol {
-    static map = new Map<symbol, MalSymbol>();
+export class TLSymbol {
+    static map = new Map<symbol, TLSymbol>();
 
-    static get(name: string): MalSymbol {
+    static get(name: string): TLSymbol {
         const sym = Symbol.for(name);
         let token = this.map.get(sym);
         if (token) {
             return token;
         }
-        token = new MalSymbol(name);
+        token = new TLSymbol(name);
         this.map.set(sym, token);
         return token;
     }
 
     type: Node.Symbol = Node.Symbol;
-    meta?: MalType;
+    meta?: TLType;
 
     private constructor(public v: string) {
     }
 
-    withMeta(_meta: MalType): MalSymbol {
+    withMeta(_meta: TLType): TLSymbol {
         throw new Error(`not supported`);
     }
 }
 
-export class MalKeyword {
-    static map = new Map<symbol, MalKeyword>();
+export class TLKeyword {
+    static map = new Map<symbol, TLKeyword>();
 
-    static get(name: string): MalKeyword {
+    static get(name: string): TLKeyword {
         const sym = Symbol.for(name);
         let token = this.map.get(sym);
         if (token) {
             return token;
         }
-        token = new MalKeyword(name);
+        token = new TLKeyword(name);
         this.map.set(sym, token);
         return token;
     }
 
     type: Node.Keyword = Node.Keyword;
-    meta?: MalType;
+    meta?: TLType;
 
     private constructor(public v: string) {
     }
 
-    withMeta(_meta: MalType): MalKeyword {
+    withMeta(_meta: TLType): TLKeyword {
         throw new Error(`not supported`);
     }
 }
 
-export class MalVector {
+export class TLVector {
     type: Node.Vector = Node.Vector;
-    meta?: MalType;
+    meta?: TLType;
 
-    constructor(public list: MalType[]) {
+    constructor(public list: TLType[]) {
     }
 
-    withMeta(meta: MalType) {
-        const v = new MalVector(this.list);
+    withMeta(meta: TLType) {
+        const v = new TLVector(this.list);
         v.meta = meta;
         return v;
     }
 }
 
-export class MalHashMap {
+export class TLHashMap {
     type: Node.HashMap = Node.HashMap;
-    stringMap: { [key: string]: MalType } = {};
-    keywordMap = new Map<MalType, MalType>();
-    meta?: MalType;
+    stringMap: { [key: string]: TLType } = {};
+    keywordMap = new Map<TLType, TLType>();
+    meta?: TLType;
 
-    constructor(list: MalType[]) {
+    constructor(list: TLType[]) {
         while (list.length !== 0) {
             const key = list.shift()!;
             const value = list.shift();
@@ -247,48 +253,48 @@ export class MalHashMap {
         }
     }
 
-    withMeta(meta: MalType) {
+    withMeta(meta: TLType) {
         const v = this.assoc([]);
         v.meta = meta;
         return v;
     }
 
-    has(key: MalKeyword | MalString) {
+    has(key: TLKeyword | TLString) {
         if (key.type === Node.Keyword) {
             return !!this.keywordMap.get(key);
         }
         return !!this.stringMap[key.v];
     }
 
-    get(key: MalKeyword | MalString) {
+    get(key: TLKeyword | TLString) {
         if (key.type === Node.Keyword) {
-            return this.keywordMap.get(key) || MalNil.instance;
+            return this.keywordMap.get(key) || TLNil.instance;
         }
-        return this.stringMap[key.v] || MalNil.instance;
+        return this.stringMap[key.v] || TLNil.instance;
     }
 
-    entries(): [MalType, MalType][] {
-        const list: [MalType, MalType][] = [];
+    entries(): [TLType, TLType][] {
+        const list: [TLType, TLType][] = [];
 
         this.keywordMap.forEach((v, k) => {
             list.push([k, v]);
         });
-        Object.keys(this.stringMap).forEach(v => list.push([new MalString(v), this.stringMap[v]]));
+        Object.keys(this.stringMap).forEach(v => list.push([new TLString(v), this.stringMap[v]]));
 
         return list;
     }
 
-    keys(): MalType[] {
-        const list: MalType[] = [];
+    keys(): TLType[] {
+        const list: TLType[] = [];
         this.keywordMap.forEach((_v, k) => {
             list.push(k);
         });
-        Object.keys(this.stringMap).forEach(v => list.push(new MalString(v)));
+        Object.keys(this.stringMap).forEach(v => list.push(new TLString(v)));
         return list;
     }
 
-    vals(): MalType[] {
-        const list: MalType[] = [];
+    vals(): TLType[] {
+        const list: TLType[] = [];
         this.keywordMap.forEach(v => {
             list.push(v);
         });
@@ -296,21 +302,21 @@ export class MalHashMap {
         return list;
     }
 
-    assoc(args: MalType[]): MalHashMap {
-        const list: MalType[] = [];
+    assoc(args: TLType[]): TLHashMap {
+        const list: TLType[] = [];
         this.keywordMap.forEach((value, key) => {
             list.push(key);
             list.push(value);
         });
         Object.keys(this.stringMap).forEach(keyStr => {
-            list.push(new MalString(keyStr));
+            list.push(new TLString(keyStr));
             list.push(this.stringMap[keyStr]);
         });
 
-        return new MalHashMap(list.concat(args));
+        return new TLHashMap(list.concat(args));
     }
 
-    dissoc(args: MalType[]): MalHashMap {
+    dissoc(args: TLType[]): TLHashMap {
         const newHashMap = this.assoc([]);
 
         args.forEach(arg => {
@@ -326,12 +332,12 @@ export class MalHashMap {
     }
 }
 
-type MalF = (...args: (MalType)[]) => MalType;
+type TLF = (...args: (TLType)[]) => TLType;
 
-export class MalFunction {
-    static fromLisp(evalMal: (ast: MalType, env: Env) => MalType, env: Env, params: MalSymbol[], bodyAst: MalType): MalFunction {
-        const f = new MalFunction();
-        f.func = (...args) => evalMal(bodyAst, new Env(env, params, checkUndefined(args)));
+export class TLFunction {
+    static fromLisp(evalTL: (ast: TLType, env: Env) => TLType, env: Env, params: TLSymbol[], bodyAst: TLType): TLFunction {
+        const f = new TLFunction();
+        f.func = (...args) => evalTL(bodyAst, new Env(env, params, checkUndefined(args)));
         f.env = env;
         f.params = params;
         f.ast = bodyAst;
@@ -339,7 +345,7 @@ export class MalFunction {
 
         return f;
 
-        function checkUndefined(args: (MalType | undefined)[]): MalType[] {
+        function checkUndefined(args: (TLType | undefined)[]): TLType[] {
             return args.map(arg => {
                 if (!arg) {
                     throw new Error(`undefined argument`);
@@ -349,8 +355,8 @@ export class MalFunction {
         }
     }
 
-    static fromBootstrap(func: MalF): MalFunction {
-        const f = new MalFunction();
+    static fromBootstrap(func: TLF): TLFunction {
+        const f = new TLFunction();
         f.func = func;
         f.isMacro = false;
 
@@ -358,17 +364,17 @@ export class MalFunction {
     }
 
     type: Node.Function = Node.Function;
-    func!: MalF;
-    ast!: MalType
+    func!: TLF;
+    ast!: TLType
     env!: Env
-    params!: MalSymbol[]
+    params!: TLSymbol[]
     isMacro!: boolean
-    meta?: MalType;
+    meta?: TLType;
 
     private constructor() { }
 
     toMacro() {
-        const f = new MalFunction();
+        const f = new TLFunction();
         f.func = this.func;
         f.ast = this.ast;
         f.env = this.env;
@@ -379,8 +385,8 @@ export class MalFunction {
         return f;
     }
 
-    withMeta(meta: MalType) {
-        const f = new MalFunction();
+    withMeta(meta: TLType) {
+        const f = new TLFunction();
         f.func = this.func;
         f.ast = this.ast;
         f.env = this.env;
@@ -391,20 +397,20 @@ export class MalFunction {
         return f;
     }
 
-    newEnv(args: MalType[]) {
+    newEnv(args: TLType[]) {
         return new Env(this.env, this.params, args);
     }
 }
 
-export class MalAtom {
+export class TLAtom {
     type: Node.Atom = Node.Atom;
-    meta?: MalType;
+    meta?: TLType;
 
-    constructor(public v: MalType) {
+    constructor(public v: TLType) {
     }
 
-    withMeta(meta: MalType) {
-        const v = new MalAtom(this.v);
+    withMeta(meta: TLType) {
+        const v = new TLAtom(this.v);
         v.meta = meta;
         return v;
     }

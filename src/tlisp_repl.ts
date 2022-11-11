@@ -2,14 +2,14 @@ import {start} from "./readline";
 import {readStr} from "./reader";
 import {
     isSeq,
-    MalFunction,
-    MalHashMap,
-    MalList, MalNil,
-    MalNumber,
-    MalString,
-    MalSymbol,
-    MalType,
-    MalVector,
+    TLFunction,
+    TLHashMap,
+    TLList, TLNil,
+    TLNumber,
+    TLString,
+    TLSymbol,
+    TLType,
+    TLVector,
     Node
 } from "./types";
 import {prStr} from "./printer";
@@ -18,21 +18,20 @@ import {Env} from "./env";
 // READ
 
 
-function read(str: string): MalType {
+function read(str: string): TLType {
     let exp = undefined
     try{
         exp = readStr(str);
     }catch (e) {
         throw ("Bad syntax")
     }
-    console.log(exp);
     return exp;
 }
 
 // EVAL
 
 
-function evalAST(ast: MalType, env: Env): MalType {
+function evalAST(ast: TLType, env: Env): TLType {
     switch (ast.type) {
         case Node.Symbol:
             const f = env.get(ast)
@@ -41,23 +40,23 @@ function evalAST(ast: MalType, env: Env): MalType {
             }
             return f;
         case Node.List:
-            return new MalList(ast.list.map(ast => evalMal(ast, env)));
+            return new TLList(ast.list.map(ast => evalTL(ast, env)));
         case Node.Vector:
-            return new MalVector(ast.list.map(ast => evalMal(ast, env)));
+            return new TLVector(ast.list.map(ast => evalTL(ast, env)));
         case Node.HashMap:
-            const list: MalType[] = [];
+            const list: TLType[] = [];
             for (const [key, value] of ast.entries()) {
                 list.push(key);
-                list.push(evalMal(value, env));
+                list.push(evalTL(value, env));
             }
-            return new MalHashMap(list);
+            return new TLHashMap(list);
         default:
             return ast;
     }
 }
 
 // EVAL
-function evalMal(ast: MalType, env: Env): MalType {
+function evalTL(ast: TLType, env: Env): TLType {
     if (ast.type !== Node.List) {
          return evalAST(ast, env);
     }
@@ -76,7 +75,7 @@ function evalMal(ast: MalType, env: Env): MalType {
                     if (!value) {
                         throw new Error(`unexpected syntax`);
                     }
-                    return env.set(key, evalMal(value, env));
+                    return env.set(key, evalTL(value, env));
                 }
                 case "let*": {
                     let letEnv = new Env(env);
@@ -95,13 +94,13 @@ function evalMal(ast: MalType, env: Env): MalType {
                             throw new Error(`unexpected syntax`);
                         }
 
-                        letEnv.set(key, evalMal(value, letEnv));
+                        letEnv.set(key, evalTL(value, letEnv));
                     }
-                    return evalMal(ast.list[2], letEnv);
+                    return evalTL(ast.list[2], letEnv);
                 }
                 case "do": {
                     const [, ...list] = ast.list;
-                    const ret = evalAST(new MalList(list), env);
+                    const ret = evalAST(new TLList(list), env);
                     if (!isSeq(ret)) {
                         throw new Error(`unexpected return type: ${ret.type}, expected: list or vector`);
                     }
@@ -109,7 +108,7 @@ function evalMal(ast: MalType, env: Env): MalType {
                 }
                 case "if": {
                     const [, cond, thenExpr, elseExrp] = ast.list;
-                    const ret = evalMal(cond, env);
+                    const ret = evalTL(cond, env);
                     let b = true;
                     if (ret.type === Node.Boolean && !ret.v) {
                         b = false;
@@ -117,11 +116,11 @@ function evalMal(ast: MalType, env: Env): MalType {
                         b = false;
                     }
                     if (b) {
-                        return evalMal(thenExpr, env);
+                        return evalTL(thenExpr, env);
                     } else if (elseExrp) {
-                        return evalMal(elseExrp, env);
+                        return evalTL(elseExrp, env);
                     } else {
-                        return MalNil.instance;
+                        return TLNil.instance;
                     }
                 }
                 case "fn*": {
@@ -135,8 +134,8 @@ function evalMal(ast: MalType, env: Env): MalType {
                         }
                         return param;
                     });
-                    return MalFunction.fromBootstrap((...fnArgs: MalType[]) => {
-                        return evalMal(binds, new Env(env, symbols, fnArgs));
+                    return TLFunction.fromBootstrap((...fnArgs: TLType[]) => {
+                        return evalTL(binds, new Env(env, symbols, fnArgs));
                     });
                 }
             }
@@ -155,18 +154,18 @@ function evalMal(ast: MalType, env: Env): MalType {
 
 
 // PRINT
-function print(exp: MalType): string {
+function print(exp: TLType): string {
     return prStr(exp);
 }
 
 const replEnv = new Env();
-replEnv.set(MalSymbol.get("+"),MalFunction.fromBootstrap((a?:MalType,b?:MalType) => new MalNumber((a as MalNumber)!.v + (b as MalNumber)!.v)))
-replEnv.set(MalSymbol.get("-"),MalFunction.fromBootstrap((a?:MalType,b?:MalType) => new MalNumber((a as MalNumber)!.v - (b as MalNumber)!.v)))
-replEnv.set(MalSymbol.get("/"),MalFunction.fromBootstrap((a?:MalType,b?:MalType) => new MalNumber((a as MalNumber)!.v / (b as MalNumber)!.v)))
-replEnv.set(MalSymbol.get("*"),MalFunction.fromBootstrap((a?:MalType,b?:MalType) => new MalNumber((a as MalNumber)!.v * (b as MalNumber)!.v)))
-replEnv.set(MalSymbol.get("not"),evalMal(readStr("(def! not (fn* (a) (if a false true)))"),replEnv))
+replEnv.set(TLSymbol.get("+"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v + (b as TLNumber)!.v)))
+replEnv.set(TLSymbol.get("-"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v - (b as TLNumber)!.v)))
+replEnv.set(TLSymbol.get("/"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v / (b as TLNumber)!.v)))
+replEnv.set(TLSymbol.get("*"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v * (b as TLNumber)!.v)))
+replEnv.set(TLSymbol.get("not"),evalTL(readStr("(def! not (fn* (a) (if a false true)))"),replEnv))
 export function rep(str: string): string {
-    return print(evalMal(read(str),replEnv));
+    return print(evalTL(read(str),replEnv));
 }
 
 start(rep)

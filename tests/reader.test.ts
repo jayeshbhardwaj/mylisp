@@ -1,5 +1,5 @@
 import {tokenizer,readAtom,Reader} from "../src/reader";
-import {Node} from "../src/types";
+import {TLString, Node} from "../src/types";
 
 //Tokenizer tests
 
@@ -48,9 +48,26 @@ test('Test string tokenizer for fifth alternation', () => {
 
 
 //Read atom tests
-test("Read number using read atom", () => {
+test("Read numbers and symbols using read atom", () => {
     expect(readAtom(new Reader(tokenizer("25"))).type).toBe(Node.Number);
     expect(readAtom(new Reader(tokenizer("25ab"))).type).toBe(Node.Symbol)
     expect(readAtom(new Reader(tokenizer("-0.5"))).type).toBe(Node.Number);
     expect(readAtom(new Reader(tokenizer("-0.5ab"))).type).toBe(Node.Symbol);
+})
+
+test("Read strings using read atom", () => {
+    expect((readAtom(new Reader(tokenizer("\"abc\""))) as TLString).v).toBe("abc");
+    //multiline string
+    expect((readAtom(new Reader(tokenizer("\"abc\n\""))) as TLString).v).toBe("abc\n");
+    expect((readAtom(new Reader(tokenizer("\"abc\ncde\n\""))) as TLString).v).toBe("abc\ncde\n");
+
+    //wrap in function to catch bad string error
+    expect(() => {readAtom(new Reader(tokenizer("\"abc")))}).toThrow("expected '\"', got EOF")
+})
+
+test("Read keywords/boolean and nil using read atom", () => {
+    expect(readAtom(new Reader(tokenizer(":123abc"))).type).toBe(Node.Keyword)
+    expect(readAtom(new Reader(tokenizer("true"))).type).toBe(Node.Boolean)
+    expect(readAtom(new Reader(tokenizer("false"))).type).toBe(Node.Boolean)
+    expect(readAtom(new Reader(tokenizer("nil"))).type).toBe(Node.Nil)
 })

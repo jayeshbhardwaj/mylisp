@@ -1,6 +1,6 @@
-import { Node, MalType } from "./types";
+import { Node, TLType } from "./types";
 
-export function prStr(v: MalType, printReadably = true): string {
+export function prStr(v: TLType, printReadably = true): string {
     switch (v.type) {
         case Node.List:
             return `(${v.list.map(v => prStr(v, printReadably)).join(" ")})`;

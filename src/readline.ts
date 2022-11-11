@@ -18,7 +18,7 @@ export async function readLine(str:string, func:(a:string) => string) {
 export async function start(func:(a:string) => string) {
     try{
         while(true) {
-            await readLine("user> ",func);
+            await readLine("tlisp> ",func);
         }
     }finally {
         rl.close();
