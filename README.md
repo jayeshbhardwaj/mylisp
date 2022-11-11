@@ -7,5 +7,5 @@ Inspired from MAL, building a LISP interpreter using typescript
 git checkout https://github.com/jayeshbhardwaj/tlisp
 npm install
 npx tsc
-nde build/src/tlisp_repl.js
+n0de build/src/tlisp_repl.js
 ```
