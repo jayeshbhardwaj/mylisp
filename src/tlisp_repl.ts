@@ -1,4 +1,4 @@
-import {start} from "./readline";
+import {startREPL} from "./readline";
 import {readStr} from "./reader";
 import {
     isSeq,
@@ -22,6 +22,7 @@ function read(str: string): TLType {
     let exp = undefined
     try{
         exp = readStr(str);
+        console.log(exp);
     }catch (e) {
         throw ("Bad syntax")
     }
@@ -168,4 +169,4 @@ export function rep(str: string): string {
     return print(evalTL(read(str),replEnv));
 }
 
-start(rep)
+startREPL(rep)

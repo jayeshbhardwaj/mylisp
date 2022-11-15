@@ -1,2 +1,2 @@
-import {start}  from  './readline'
+import {startREPL}  from  './readline'
 

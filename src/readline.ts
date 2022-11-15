@@ -1,12 +1,7 @@
-import * as readline2 from 'node:readline';
+import {createInterface,Interface} from 'node:readline';
 import { stdin, stdout } from 'process';
 
-const rl = readline2.createInterface({
-    input: stdin,
-    output: stdout
-});
-
-export async function readLine(str:string, func:(a:string) => string) {
+export async function readLine(str:string, rl:Interface, func:(a:string) => string) {
     return new Promise(resolve => {
         rl.question(str, (answer) => {
             console.log(func(answer))
@@ -15,10 +10,14 @@ export async function readLine(str:string, func:(a:string) => string) {
     });
 }
 
-export async function start(func:(a:string) => string) {
+export async function startREPL(func:(a:string) => string) {
+    const rl = createInterface({
+        input: stdin,
+        output: stdout
+    });
     try{
         while(true) {
-            await readLine("tlisp> ",func);
+            await readLine("tlisp> ",rl,func);
         }
     }finally {
         rl.close();

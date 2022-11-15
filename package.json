@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "run": "node build/index.js"
+    "run": "node build/src/tlisp_repl.js"
   },
   "keywords": [],
   "author": "",
