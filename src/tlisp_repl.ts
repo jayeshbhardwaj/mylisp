@@ -1,5 +1,14 @@
 import {startREPL} from "./readline";
 import {readStr} from "./reader";
+import * as core from "./core";
+import {
+    S3Client,
+    ListObjectsCommand,
+    S3ClientConfig,
+    ListBucketsCommand,
+    ListBucketsCommandInput
+} from "@aws-sdk/client-s3";
+import * as AWS from 'aws-sdk'
 import {
     isSeq,
     TLFunction,
@@ -14,6 +23,7 @@ import {
 } from "./types";
 import {prStr} from "./printer";
 import {Env} from "./env";
+import {ns} from "./core";
 
 // READ
 
@@ -22,7 +32,7 @@ function read(str: string): TLType {
     let exp = undefined
     try{
         exp = readStr(str);
-        console.log(exp);
+        //console.log(exp);
     }catch (e) {
         throw ("Bad syntax")
     }
@@ -159,14 +169,45 @@ function print(exp: TLType): string {
     return prStr(exp);
 }
 
+//Setup Env
 const replEnv = new Env();
-replEnv.set(TLSymbol.get("+"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v + (b as TLNumber)!.v)))
-replEnv.set(TLSymbol.get("-"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v - (b as TLNumber)!.v)))
-replEnv.set(TLSymbol.get("/"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v / (b as TLNumber)!.v)))
-replEnv.set(TLSymbol.get("*"),TLFunction.fromBootstrap((a?:TLType,b?:TLType) => new TLNumber((a as TLNumber)!.v * (b as TLNumber)!.v)))
-replEnv.set(TLSymbol.get("not"),evalTL(readStr("(def! not (fn* (a) (if a false true)))"),replEnv))
+core.ns.forEach((value, key) => {
+    replEnv.set(key, value);
+});
+
 export function rep(str: string): string {
     return print(evalTL(read(str),replEnv));
 }
 
+rep("(def! not (fn* (a) (if a false true)))");
 startREPL(rep)
+
+/*
+function  getObjects() {
+    AWS.config.update({
+        region: "us-east-1"
+    });
+
+    let s3 = new AWS.S3();
+    s3.listBuckets((err, data) => {
+        if (err) console.log(err, err.stack);
+        else console.log(data);
+    });
+}
+
+asset_attrib_lookup => function: (string) => (asset/string)
+1. look up that attribute in S3/csv (++ dynamodb) (asset_lookup ("attr_name" "attr_value"))
+2. update/remove asset  {k v } => {asset}
+
+Ability to define funcs
+1. user defines his own "next book value"
+(def! nbv (fn* (asset_id:string) (<>)))
+
+Prereqs:
+1) Sample data (export from the table in beta to a csv)
+2) Package with AWS/brazil (burner account) (1. add the Config, 2. changes to package.json 3. ..) => brazil-build => npm commands
+3) Code changes
+
+
+ */
+

@@ -18,6 +18,7 @@ export class Reader {
 
 export function readStr(input: string): TLType {
     const tokens = tokenizer(input);
+    if(tokens.length == 0) return TLNil.instance
     const reader = new Reader(tokens);
     return readForm(reader);
 }
