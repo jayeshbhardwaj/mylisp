@@ -1,6 +1,6 @@
 import {startREPL} from "./readline";
 import {readStr} from "./reader";
-import * as core from "./core";
+import * as core from "./core"
 import {
     S3Client,
     ListObjectsCommand,
@@ -23,7 +23,6 @@ import {
 } from "./types";
 import {prStr} from "./printer";
 import {Env} from "./env";
-import {ns} from "./core";
 
 // READ
 
