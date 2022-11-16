@@ -17,7 +17,7 @@ export async function startREPL(func:(a:string) => string) {
     });
     try{
         while(true) {
-            await readLine("tlisp> ",rl,func);
+            await readLine("AQL> ",rl,func);
         }
     }finally {
         rl.close();

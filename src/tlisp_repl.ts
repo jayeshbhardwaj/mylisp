@@ -1,14 +1,7 @@
 import {startREPL} from "./readline";
 import {readStr} from "./reader";
 import * as core from "./core"
-import {
-    S3Client,
-    ListObjectsCommand,
-    S3ClientConfig,
-    ListBucketsCommand,
-    ListBucketsCommandInput
-} from "@aws-sdk/client-s3";
-import * as AWS from 'aws-sdk'
+import * as core_aql from "./aql_core"
 import {
     isSeq,
     TLFunction,
@@ -24,6 +17,15 @@ import {
 import {prStr} from "./printer";
 import {Env} from "./env";
 
+
+
+const aql_string = `************************AQL v0.1*****************************
+AQL is a query language to interact with the FAA subledger.
+It can be used to replace oracle based procedures for all fixed assets
+
+Disclaimer: AQL bears no resemblance to any real language 
+and any such resemblance is purely coincidental :)
+***********************************************************`
 // READ
 
 
@@ -173,40 +175,17 @@ const replEnv = new Env();
 core.ns.forEach((value, key) => {
     replEnv.set(key, value);
 });
+core_aql.ns.forEach((value, key) => {
+    replEnv.set(key, value);
+});
 
 export function rep(str: string): string {
     return print(evalTL(read(str),replEnv));
 }
 
 rep("(def! not (fn* (a) (if a false true)))");
+
+console.log(aql_string)
 startREPL(rep)
 
-/*
-function  getObjects() {
-    AWS.config.update({
-        region: "us-east-1"
-    });
-
-    let s3 = new AWS.S3();
-    s3.listBuckets((err, data) => {
-        if (err) console.log(err, err.stack);
-        else console.log(data);
-    });
-}
-
-asset_attrib_lookup => function: (string) => (asset/string)
-1. look up that attribute in S3/csv (++ dynamodb) (asset_lookup ("attr_name" "attr_value"))
-2. update/remove asset  {k v } => {asset}
-
-Ability to define funcs
-1. user defines his own "next book value"
-(def! nbv (fn* (asset_id:string) (<>)))
-
-Prereqs:
-1) Sample data (export from the table in beta to a csv)
-2) Package with AWS/brazil (burner account) (1. add the Config, 2. changes to package.json 3. ..) => brazil-build => npm commands
-3) Code changes
-
-
- */
 

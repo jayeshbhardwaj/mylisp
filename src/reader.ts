@@ -55,7 +55,7 @@ export function readForm(reader:Reader):TLType {
     switch(char){
         case "(" : return readSeq(reader, TLList, "(", ")")
         case "[" : return readSeq(reader, TLVector, "[", "]")
-        case "{" : return readSeq(reader, TLVector, "{", "}")
+        case "{" : return readSeq(reader, TLHashMap, "{", "}")
         default : return readAtom(reader);
     }
 }
