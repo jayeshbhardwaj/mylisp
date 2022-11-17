@@ -1,35 +1,38 @@
-import {Node, TLBoolean, TLFunction, TLString, TLSymbol, TLType} from "./types";
+import {Node, TLBoolean, TLFunction, TLNil, TLString, TLSymbol, TLType} from "./types";
 import {AssetAttributes} from "./aql_types";
-
+import * as JsonOp from "./jsonUtil"
 
 export const ns: Map<TLSymbol, TLFunction> = (() => {
     const ns: { [symbol: string]: typeof TLFunction.prototype.func; } = {
-        "asset_create"(assetID: TLType, assetAttrs: TLType): TLString {
-            if(assetID.type != Node.Number){
-                throw new Error("Bad Asset Id")
-            }
+        "asset_create"(assetAttrs: TLType): TLString {
             if(assetAttrs.type != Node.HashMap){
                 throw new Error("Expected hash map for attributes")
             }
             let asset:AssetAttributes = new AssetAttributes(assetAttrs.stringMap)
-            return new TLString(asset.toString())
+            JsonOp.addAsset(asset)
+            return new TLString("Asset created with ID :" + asset.assetId)
         },
         "asset_update"(assetID: TLType, assetAttrs: TLType): TLString {
-            if(assetID.type != Node.Number){
+            if(assetID.type != Node.String){
                 throw new Error("Bad Asset Id")
             }
             if(assetAttrs.type != Node.HashMap){
                 throw new Error("Expected hash map for attributes")
             }
-            let asset:AssetAttributes = new AssetAttributes(assetAttrs.stringMap)
-            return new TLString(asset.toString())
+
+            JsonOp.updateData(assetID.v, assetAttrs.stringMap)
+
+            return new TLString("Updated attributes for assetId: "+assetID.v)
         },
-        "asset_versions"(assetID: TLType): TLString {
-            if(assetID.type != Node.Number){
+        "asset_versions"(assetID: TLType):TLString {
+            if(assetID.type != Node.String){
                 throw new Error("Bad Asset Id")
             }
+            let assetData = JSON.stringify(assetID)
 
-            return new TLString("")
+            let versions:any[] = JsonOp.getAsset(assetID.v)
+            console.log(JSON.stringify(versions))
+            return new TLString("Asset Versions:" + versions.length)
         }
     };
 
