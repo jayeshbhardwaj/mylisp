@@ -6,12 +6,12 @@ import results from "../results.json";
 import {TLHashMap, TLString, TLType} from "./types";
 
 
-export function getAsset(assetId: string):any[] {
+export function getAsset(assetId: string):string[] {
     let new_results:any[] = results
-    let assetArray: any[] = [];
+    let assetArray: string[] = [];
     for (let i = 0; i < new_results.length; i++) {
         if (new_results[i]['assetId'] == assetId) {
-            assetArray.push(new_results[i]);
+            assetArray.push(JSON.stringify(new_results[i]));
         }
     }
     return assetArray;

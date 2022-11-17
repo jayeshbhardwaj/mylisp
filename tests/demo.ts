@@ -9,4 +9,11 @@ Demo Script:
 
 3. List asset versions
 (asset_versions "1234")
+
+4. Other:
+(count [1 2 3])
+(count (asset_versions "1234"))
+
+;;Define your own functions
+(def! count_versions (fn* [id] (count (asset_versions id))))
  */

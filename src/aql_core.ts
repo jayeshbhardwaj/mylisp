@@ -1,6 +1,8 @@
-import {Node, TLBoolean, TLFunction, TLNil, TLString, TLSymbol, TLType} from "./types";
+import {Node, TLBoolean, TLFunction, TLList, TLNil, TLString, TLSymbol, TLType} from "./types";
 import {AssetAttributes} from "./aql_types";
 import * as JsonOp from "./jsonUtil"
+import {prStr} from "./printer";
+import {rep} from "./tlisp_repl";
 
 export const ns: Map<TLSymbol, TLFunction> = (() => {
     const ns: { [symbol: string]: typeof TLFunction.prototype.func; } = {
@@ -24,15 +26,15 @@ export const ns: Map<TLSymbol, TLFunction> = (() => {
 
             return new TLString("Updated attributes for assetId: "+assetID.v)
         },
-        "asset_versions"(assetID: TLType):TLString {
+        "asset_versions"(assetID: TLType):TLList {
             if(assetID.type != Node.String){
                 throw new Error("Bad Asset Id")
             }
-            let assetData = JSON.stringify(assetID)
-
-            let versions:any[] = JsonOp.getAsset(assetID.v)
-            console.log(JSON.stringify(versions))
-            return new TLString("Asset Versions:" + versions.length)
+            let versions:string[] = JsonOp.getAsset(assetID.v)
+            console.log(versions)
+            let p:TLString[] = versions.map(v => new TLString(v))
+            //console.log(p)
+            return new TLList(p);
         }
     };
 
