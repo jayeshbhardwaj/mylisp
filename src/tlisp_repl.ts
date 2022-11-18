@@ -1,26 +1,7 @@
 import {startREPL} from "./readline";
 import {readStr} from "./reader";
 import * as core from "./core"
-import {
-    S3Client,
-    ListObjectsCommand,
-    S3ClientConfig,
-    ListBucketsCommand,
-    ListBucketsCommandInput
-} from "@aws-sdk/client-s3";
-import * as AWS from 'aws-sdk'
-import {
-    isSeq,
-    TLFunction,
-    TLHashMap,
-    TLList,
-    TLNil,
-    TLNumber,
-    TLSymbol,
-    TLType,
-    TLVector,
-    Node
-} from "./types";
+import {isSeq, Node, TLFunction, TLHashMap, TLList, TLNil, TLType, TLVector} from "./types";
 import {prStr} from "./printer";
 import {Env} from "./env";
 
@@ -60,6 +41,7 @@ function evalAST(ast: TLType, env: Env): TLType {
                 list.push(evalTL(value, env));
             }
             return new TLHashMap(list);
+
         default:
             return ast;
     }
@@ -148,7 +130,19 @@ function evalTL(ast: TLType, env: Env): TLType {
                         return evalTL(binds, new Env(env, symbols, fnArgs));
                     });
                 }
+
             }
+        case Node.Keyword:
+            console.log(ast.list[1])
+            if(ast.list.length > 2)
+                throw new Error(`Unexpected args, expected only hashmap`)
+            if(ast.list[1].type != Node.HashMap)
+                throw new Error(`Unexpected token type: ${ast.list[1].type}, expected hashmap`)
+            const hmap:TLHashMap = evalAST(ast.list[1],env) as TLHashMap
+            let ret = hmap.keywordMap.get(first)
+            if(ret == undefined) return TLNil.instance
+            else return ret
+
     }
     const result = evalAST(ast, env);
     if (!isSeq(result)) {
