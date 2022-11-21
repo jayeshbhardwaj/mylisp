@@ -132,8 +132,9 @@ function evalTL(ast: TLType, env: Env): TLType {
                 }
 
             }
+        /*
         case Node.Keyword:
-            console.log(ast.list[1])
+            console.log(ast.list[0])
             if(ast.list.length > 2)
                 throw new Error(`Unexpected args, expected only hashmap`)
             if(ast.list[1].type != Node.HashMap)
@@ -142,7 +143,7 @@ function evalTL(ast: TLType, env: Env): TLType {
             let ret = hmap.keywordMap.get(first)
             if(ret == undefined) return TLNil.instance
             else return ret
-
+        */
     }
     const result = evalAST(ast, env);
     if (!isSeq(result)) {
