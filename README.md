@@ -11,6 +11,9 @@ npx tsc
 
 # run
 ```
-node node build/src/tlisp_repl.js
+node build/src/tlisp_repl.js file.tl
 
+;; or just start the repl
+
+node build/src/tlisp_repl.js
 ```
