@@ -1,7 +1,7 @@
 import {startREPL} from "./readline";
 import {readStr} from "./reader";
 import * as core from "./core"
-import {isSeq, Node, TLFunction, TLHashMap, TLList, TLNil, TLType, TLVector} from "./types";
+import {isSeq, Node, TLFunction, TLHashMap, TLList, TLNil, TLSymbol, TLType, TLVector} from "./types";
 import {prStr} from "./printer";
 import {Env} from "./env";
 
@@ -12,7 +12,7 @@ import {Env} from "./env";
 // EVAL
 
 
-function evalAST(ast: TLType, env: Env): TLType {
+export function evalAST(ast: TLType, env: Env): TLType {
     switch (ast.type) {
         case Node.Symbol:
             const f = env.get(ast)
@@ -38,7 +38,7 @@ function evalAST(ast: TLType, env: Env): TLType {
 }
 
 // EVAL
-function evalTL(ast: TLType, env: Env): TLType {
+export function evalTL(ast: TLType, env: Env): TLType {
     if (ast.type !== Node.List) {
          return evalAST(ast, env);
     }
@@ -147,7 +147,6 @@ function evalTL(ast: TLType, env: Env): TLType {
 }
 
 
-
 // PRINT
 function print(exp: TLType): string {
     return prStr(exp);
@@ -159,9 +158,18 @@ core.ns.forEach((value, key) => {
     replEnv.set(key, value);
 });
 
+replEnv.set(TLSymbol.get("eval"), TLFunction.fromBootstrap(ast => {
+    if (!ast) {
+        throw new Error(`undefined argument`);
+    }
+    return evalTL(ast, replEnv);
+}));
+
+replEnv.set(TLSymbol.get("*ARGV*"), new TLList([]));
 export function rep(str: string): string {
     return print(evalTL(readStr(str),replEnv));
 }
 
 rep("(def! not (fn* (a) (if a false true)))");
+rep("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\\nnil)\")))))")
 startREPL(rep)
