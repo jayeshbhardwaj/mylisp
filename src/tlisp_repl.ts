@@ -1,7 +1,7 @@
 import {startREPL} from "./readline";
 import {readStr} from "./reader";
 import * as core from "./core"
-import {isSeq, Node, TLFunction, TLHashMap, TLList, TLNil, TLSymbol, TLType, TLVector} from "./types";
+import {isSeq, Node, TLFunction, TLHashMap, TLList, TLNil, TLString, TLSymbol, TLType, TLVector} from "./types";
 import {prStr} from "./printer";
 import {Env} from "./env";
 
@@ -165,11 +165,18 @@ replEnv.set(TLSymbol.get("eval"), TLFunction.fromBootstrap(ast => {
     return evalTL(ast, replEnv);
 }));
 
-replEnv.set(TLSymbol.get("*ARGV*"), new TLList([]));
+replEnv.set(TLSymbol.get("*ARGV*"), TLFunction.fromBootstrap(ast => {
+    const argList:TLString[] = process.argv.slice(2).map(a => new TLString(a))
+    return new TLList(argList);
+}));
 export function rep(str: string): string {
     return print(evalTL(readStr(str),replEnv));
 }
 
 rep("(def! not (fn* (a) (if a false true)))");
 rep("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\\nnil)\")))))")
-startREPL(rep)
+rep("(def! args (*ARGV*))")
+if(process.argv.length > 2)
+    rep("(if (> (count args) 0) (load-file (first args)) ())")
+else
+    startREPL(rep)
