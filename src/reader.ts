@@ -1,4 +1,16 @@
-import { TLType, TLList, TLString, TLNumber, TLBoolean, TLNil, TLKeyword, TLSymbol, TLVector, TLHashMap } from "./types";
+import {
+    TLType,
+    TLList,
+    TLString,
+    TLNumber,
+    TLBoolean,
+    TLNil,
+    TLKeyword,
+    TLSymbol,
+    TLVector,
+    TLHashMap,
+    EmptyTokenError
+} from "./types";
 
 export class Reader {
     position = 0;
@@ -18,7 +30,7 @@ export class Reader {
 
 export function readStr(input: string): TLType {
     const tokens = tokenizer(input);
-    if(tokens.length == 0) return TLNil.instance
+    if(tokens.length == 0) throw new EmptyTokenError('no tokens')
     const reader = new Reader(tokens);
     return readForm(reader);
 }

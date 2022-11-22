@@ -1,5 +1,19 @@
 import { Env } from "./env";
 
+export class EmptyTokenError extends Error {
+    statusCode = 400;
+
+    constructor(message: string) {
+        super(message);
+
+        // 👇️ because we are extending a built-in class
+        Object.setPrototypeOf(this, EmptyTokenError.prototype);
+    }
+
+    getErrorMessage() {
+        return 'Something went wrong: ' + this.message;
+    }
+}
 export type TLType = TLList | TLNumber | TLString | TLNil | TLBoolean | TLSymbol | TLKeyword | TLVector | TLHashMap | TLFunction | TLAtom;
 
 export const enum Node {

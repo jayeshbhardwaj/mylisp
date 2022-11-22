@@ -8,16 +8,6 @@ import {Env} from "./env";
 // READ
 
 
-function read(str: string): TLType {
-    let exp = undefined
-    try{
-        exp = readStr(str);
-        //console.log(exp);
-    }catch (e) {
-        throw ("Bad syntax")
-    }
-    return exp;
-}
 
 // EVAL
 
@@ -132,9 +122,9 @@ function evalTL(ast: TLType, env: Env): TLType {
                 }
 
             }
-        /*
+            break;
+
         case Node.Keyword:
-            console.log(ast.list[0])
             if(ast.list.length > 2)
                 throw new Error(`Unexpected args, expected only hashmap`)
             if(ast.list[1].type != Node.HashMap)
@@ -143,7 +133,7 @@ function evalTL(ast: TLType, env: Env): TLType {
             let ret = hmap.keywordMap.get(first)
             if(ret == undefined) return TLNil.instance
             else return ret
-        */
+
     }
     const result = evalAST(ast, env);
     if (!isSeq(result)) {
@@ -170,38 +160,8 @@ core.ns.forEach((value, key) => {
 });
 
 export function rep(str: string): string {
-    return print(evalTL(read(str),replEnv));
+    return print(evalTL(readStr(str),replEnv));
 }
 
 rep("(def! not (fn* (a) (if a false true)))");
 startREPL(rep)
-
-/*
-function  getObjects() {
-    AWS.config.update({
-        region: "us-east-1"
-    });
-
-    let s3 = new AWS.S3();
-    s3.listBuckets((err, data) => {
-        if (err) console.log(err, err.stack);
-        else console.log(data);
-    });
-}
-
-asset_attrib_lookup => function: (string) => (asset/string)
-1. look up that attribute in S3/csv (++ dynamodb) (asset_lookup ("attr_name" "attr_value"))
-2. update/remove asset  {k v } => {asset}
-
-Ability to define funcs
-1. user defines his own "next book value"
-(def! nbv (fn* (asset_id:string) (<>)))
-
-Prereqs:
-1) Sample data (export from the table in beta to a csv)
-2) Package with AWS/brazil (burner account) (1. add the Config, 2. changes to package.json 3. ..) => brazil-build => npm commands
-3) Code changes
-
-
- */
-
