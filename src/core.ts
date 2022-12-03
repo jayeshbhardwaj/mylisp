@@ -1,9 +1,25 @@
 import * as fs from "fs";
 
 
-import { Node, TLType, TLSymbol, TLFunction, TLNil, TLList, TLVector, TLBoolean, TLNumber, TLString, TLKeyword, TLHashMap, TLAtom, equals, isSeq } from "./types";
-import { readStr } from "./reader";
-import { prStr } from "./printer";
+import {
+    equals,
+    isSeq,
+    Node,
+    TLAtom,
+    TLBoolean,
+    TLFunction,
+    TLHashMap,
+    TLKeyword,
+    TLList,
+    TLNil,
+    TLNumber,
+    TLString,
+    TLSymbol,
+    TLType,
+    TLVector
+} from "./types";
+import {readStr} from "./reader";
+import {prStr} from "./printer";
 
 export const ns: Map<TLSymbol, TLFunction> = (() => {
     const ns: { [symbol: string]: typeof TLFunction.prototype.func; } = {
@@ -25,6 +41,12 @@ export const ns: Map<TLSymbol, TLFunction> = (() => {
         },
         "string?"(v: TLType) {
             return new TLBoolean(v.type === Node.String);
+        },
+        "trim"(v : TLType){
+            if (v.type !== Node.String) {
+                throw new Error(`unexpected symbol: ${v.type}, expected: string`);
+            }
+            return new TLString(v.v.trim());
         },
         symbol(v: TLType) {
             if (v.type !== Node.String) {
@@ -50,13 +72,27 @@ export const ns: Map<TLSymbol, TLFunction> = (() => {
         "number?"(v: TLType) {
             return new TLBoolean(v.type === Node.Number);
         },
+        "toInt"(v : TLType){
+            if (v.type !== Node.String) {
+                return new TLNumber(0);
+                //throw new Error(`unexpected symbol: ${v.type}, expected: string`);
+            }
+             return new TLNumber(parseInt(v.v));
+        },
         "fn?"(v: TLType) {
             return new TLBoolean(v.type === Node.Function && !v.isMacro);
         },
         "macro?"(v: TLType) {
             return new TLBoolean(v.type === Node.Function && v.isMacro);
         },
-
+        "split"(v : TLType, r : TLType){
+            if(v.type !== Node.String || r.type !== Node.String)
+              throw new Error(`unexpected symbol: ${v.type}, expected: string`);
+            const str = v.v
+            const pattern = r.v
+            const strs:TLString[] = str.split(pattern).map(s => new TLString(s))
+            return new TLList(strs)
+        },
         "pr-str"(...args: TLType[]): TLString {
             return new TLString(args.map(v => prStr(v, true)).join(" "));
         },
@@ -126,6 +162,11 @@ export const ns: Map<TLSymbol, TLFunction> = (() => {
             }
 
             return new TLBoolean(a.v >= b.v);
+        },
+        "and"(a:TLType, b:TLType): TLBoolean {
+            if(a.type != Node.Boolean || b.type != Node.Boolean)
+                throw new Error(`unexpected symbol: ${a.type}, expected: boolean`);
+            return new TLBoolean(a.v&&b.v)
         },
         "+"(a: TLType, b: TLType): TLNumber {
             if (a.type !== Node.Number) {
@@ -346,7 +387,30 @@ export const ns: Map<TLSymbol, TLFunction> = (() => {
 
             return new TLList(list.list.map(v => f.func(v)));
         },
-
+        reduce(f: TLType, list: TLType, init:TLType){
+            if (f.type !== Node.Function) {
+                throw new Error(`unexpected symbol: ${f.type}, expected: function`);
+            }
+            if (!isSeq(list)) {
+                throw new Error(`unexpected symbol: ${list.type}, expected: list or vector`);
+            }
+            switch(init.type){
+                case Node.String : return list.list.reduce((a,b) => f.func(a,b),new TLString(init.v))
+                case Node.Number : return list.list.reduce((a,b) => f.func(a,b),new TLNumber(init.v))
+                default : return TLNil.instance
+            }
+        },
+        sort(l : TLType, f : TLType){
+          if(!isSeq(l) || f.type != Node.Function)
+              throw new Error(`unexpected symbol: ${l.type}, expected: list or vector`);
+          const func = (a:TLType,b:TLType) => {const ret = f.func(a,b); if(ret.type != Node.Number) return 0; else return ret.v}
+          return new TLList(l.list.sort(func))
+        },
+        take(l: TLType, n:TLType){
+            if(!isSeq(l) || n.type != Node.Number)
+                throw new Error(`unexpected symbol: ${l.type}, expected: list or vector`);
+          return new TLList(l.list.slice(0,n.v));
+        },
         conj(list: TLType, ...args: TLType[]) {
             switch (list.type) {
                 case Node.List:

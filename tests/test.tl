@@ -8,3 +8,8 @@
 (def! inc4 (fn* (a) (+ 4 a)))
 
 (prn (inc4 5))
+(def! sum (fn* (a b) (if true (+ a b) b)))
+(def! sum2 (fn* (n acc) (if (= n 0) acc (sum2 (- n 1) (+ n acc)))))
+
+(prn (+ 1
+2))
